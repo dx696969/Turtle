@@ -65,4 +65,4 @@ async def listen(ctx):
         await ctx.send("Bot is not connected to a voice channel.")
 
 # Run the bot
-bot.run('USERID')
+bot.run('TOKEN ID')
