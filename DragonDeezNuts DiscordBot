@@ -1,0 +1,68 @@
+import discord
+from discord.ext import commands
+import speech_recognition as sr
+import pyttsx3
+import discloud
+
+
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+
+# Initialize the recognizer
+r = sr.Recognizer()
+
+# Set up the bot
+intents = discord.Intents.default()
+intents.message_content = True  # Required for message content reading
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Function to convert text to speech
+def speak_text(command):
+    engine.say(command)
+    engine.runAndWait()
+
+# Join voice channel
+@bot.command()
+async def join(ctx):
+    if ctx.author.voice:
+        channel = ctx.author.voice.channel
+        await channel.connect()
+    else:
+        await ctx.send("You're not in a voice channel!")
+
+# Leave voice channel
+@bot.command()
+async def leave(ctx):
+    if ctx.voice_client:
+        await ctx.guild.voice_client.disconnect()
+    else:
+        await ctx.send("I'm not in a voice channel!")
+
+# Listen for audio in the voice channel
+@bot.command()
+async def listen(ctx):
+    vc = ctx.voice_client
+    if vc and vc.is_connected():
+        with sr.Microphone() as source:
+            # Adjust for ambient noise and listen to the audio
+            r.adjust_for_ambient_noise(source)
+            audio = r.listen(source)
+
+        try:
+            # Recognize speech using Google Speech Recognition
+            MyText = r.recognize_google(audio).lower()
+            print(f"Did you say: {MyText}")
+
+            # Check for "What's dragon?"
+            if "what's dragon" or "watch dragon" in MyText:
+                await ctx.send("Drag-gon deez nuts on your face!")
+                speak_text("Drag-gon deez nuts on your face hahaha!")
+        except sr.UnknownValueError:
+            print("Sorry, I could not understand the audio.")
+        except sr.RequestError as e:
+            print(f"Could not request results; {e}")
+    else:
+        await ctx.send("Bot is not connected to a voice channel.")
+
+# Run the bot
+bot.run('USERID')
